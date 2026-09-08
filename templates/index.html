@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini Workspace</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    /* Main Container with 2-column layout */
+    .app-container {
+      display: flex;
+      width: 100%;
+      max-width: 1100px;
+      height: 90vh;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Left: Main Chat Pane */
+    .main-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #30363d;
+    }
+
+    .chat-header {
+      padding: 18px 24px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #238636;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #238636;
+    }
+
+    .header-title {
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: #30363d transparent;
+    }
+
+    .bubble {
+      max-width: 75%;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-wrap: break-word;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user {
+      background: #238636;
+      color: #ffffff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+      white-space: pre-wrap;
+    }
+
+    .input-area {
+      padding: 16px 24px;
+      border-top: 1px solid #30363d;
+      background: #161b22;
+      display: flex;
+      gap: 12px;
+    }
+
+    .input-area input {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      padding: 14px 18px;
+      border-radius: 12px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .input-area input:focus {
+      border-color: #58a6ff;
+    }
+
+    .input-area button {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 0 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover {
+      background: #2ea043;
+    }
+
+    .input-area button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Right: History Sidebar */
+    .history-sidebar {
+      width: 280px;
+      background: #0f141c;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .new-chat-btn {
+      background: transparent;
+      border: 1px solid #30363d;
+      color: #58a6ff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .new-chat-btn:hover {
+      background: #21262d;
+      border-color: #58a6ff;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: #30363d transparent;
+    }
+
+    .history-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #8b949e;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .history-item:hover {
+      background: #161b22;
+      color: #c9d1d9;
+    }
+
+    .history-item.active {
+      background: #21262d;
+      color: #f0f6fc;
+      border-color: #30363d;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Main Chat Section -->
+  <section class="main-chat">
+    <header class="chat-header">
+      <div class="status-dot"></div>
+      <div class="header-title">Gemini Assistant</div>
+    </header>
+    
+    <div class="chat-box" id="chatBox">
+      <div class="bubble bot">Hello! How can I assist you today?</div>
+    </div>
+
+    <form class="input-area" id="chatForm">
+      <input type="text" id="userInput" placeholder="Ask anything..." autocomplete="off" required />
+      <button type="submit" id="sendBtn">Send</button>
+    </form>
+  </section>
+
+  <!-- Right History Sidebar -->
+  <aside class="history-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Chats</span>
+      <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <!-- Session items will be dynamically injected here -->
+    </div>
+  </aside>
+</div>
+
+<script>
+  const chatBox = document.getElementById("chatBox");
+  const chatForm = document.getElementById("chatForm");
+  const userInput = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const historyList = document.getElementById("historyList");
+  const newChatBtn = document.getElementById("newChatBtn");
+
+  // Local chat storage structure
+  let sessions = JSON.parse(localStorage.getItem("gemini_chats") || "[]");
+  let currentSessionId = null;
+
+  function saveSessions() {
+    localStorage.setItem("gemini_chats", JSON.stringify(sessions));
+  }
+
+  function renderHistorySidebar() {
+    historyList.innerHTML = "";
+    sessions.forEach(session => {
+      const item = document.createElement("div");
+      item.className = `history-item ${session.id === currentSessionId ? 'active' : ''}`;
+      item.textContent = session.title;
+      item.onclick = () => loadSession(session.id);
+      historyList.appendChild(item);
+    });
+  }
+
+  function loadSession(id) {
+    currentSessionId = id;
+    const session = sessions.find(s => s.id === id);
+    chatBox.innerHTML = "";
+    
+    if (session && session.messages.length > 0) {
+      session.messages.forEach(msg => addMessageToUI(msg.text, msg.sender));
+    } else {
+      addMessageToUI("Hello! How can I assist you today?", "bot");
+    }
+    renderHistorySidebar();
+  }
+
+  function startNewChat() {
+    const newSession = {
+      id: Date.now().toString(),
+      title: "New Conversation",
+      messages: []
+    };
+    sessions.unshift(newSession);
+    saveSessions();
+    loadSession(newSession.id);
+  }
+
+  function addMessageToUI(text, sender) {
+    const bubble = document.createElement("div");
+    bubble.className = `bubble ${sender}`;
+    bubble.textContent = text;
+    chatBox.appendChild(bubble);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    // Initialize session if first message
+    if (!currentSessionId) {
+      startNewChat();
+    }
+
+    const currentSession = sessions.find(s => s.id === currentSessionId);
+
+    // Update title on first user query
+    if (currentSession.messages.length === 0) {
+      currentSession.title = message.length > 25 ? message.substring(0, 25) + "..." : message;
+    }
+
+    // Add User Message
+    addMessageToUI(message, "user");
+    currentSession.messages.push({ text: message, sender: "user" });
+    saveSessions();
+    renderHistorySidebar();
+
+    userInput.value = "";
+    sendBtn.disabled = true;
+
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+      });
+
+      const data = await response.json();
+      const reply = data.reply || "Error: No reply received.";
+      
+      addMessageToUI(reply, "bot");
+      currentSession.messages.push({ text: reply, sender: "bot" });
+      saveSessions();
+    } catch (error) {
+      addMessageToUI("Error: Could not reach the server.", "bot");
+    } finally {
+      sendBtn.disabled = false;
+      userInput.focus();
+    }
+  });
+
+  newChatBtn.addEventListener("click", startNewChat);
+
+  // Initialize view
+  if (sessions.length > 0) {
+    loadSession(sessions[0].id);
+  } else {
+    startNewChat();
+  }
+</script>
+
+</body>
+</html>
