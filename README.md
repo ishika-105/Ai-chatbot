@@ -41,7 +41,7 @@ Gemini-API-Chatbot/
 #Open cmd
 
 Step 1 — Clone the repository
-git clone YOUR_GITHUB_REPOSITORY_URL
+git clone [YOUR_GITHUB_REPOSITORY_URL](https://github.com/ishika-105/Ai-chatbot)
 ---
 Step 2 — Enter the project
 cd Ai_Chatbot project
